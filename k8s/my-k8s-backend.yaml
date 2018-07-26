@@ -1,0 +1,36 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: jay-backend
+  labels:
+    app: jay-backend
+spec:
+  replicas: 1
+  minReadySeconds: 20
+  revisionHistoryLimit: 1
+  template:
+    metadata:
+      labels:
+        app: jay-backend
+  
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: jay-backend
+          image: php:7-fpm
+          #imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jay-backend
+spec:
+  type: ClusterIP
+  clusterIP: ""
+  ports:
+    - port: 9000
+  selector:
+    app: jay-backend

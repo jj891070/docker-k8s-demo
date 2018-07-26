@@ -1,0 +1,70 @@
+version: '2'
+
+services:
+
+    redis:
+        image: redis
+        restart: always
+        tty: true
+        ports:
+            - "6379:6379"
+        
+        volumes:
+            - cache:/data
+        
+
+    redis-admin:
+        image: jj891070/apache2-phpredisadmin
+        restart: always
+        tty: true
+        ports:
+            - "3200:80"
+        
+        environment:
+            - JAY_REDIS_HOSTS=melon-common-redis
+        depends_on:
+            - redis
+
+    db:
+        image: mysql:5.7
+        restart: always
+        tty: true
+        ports:
+            - "3301:3306"
+        
+        volumes:
+            - database:/var/lib/mysql
+        environment:
+            MYSQL_USER: root
+            MYSQL_ROOT_PASSWORD: qwe123
+            MYSQL_DATABASE: Jay
+
+    adminer:
+        image: adminer
+        restart: always
+        ports:
+            - "3300:8080"
+
+    nginx:
+        image: nginx:latest
+        ports:
+        - "3000:80"
+        volumes:
+        # - ./gitlab:/gitlab
+        - ./nginx:/etc/nginx/conf.d
+        depends_on:
+        - php7
+
+    php7:
+        image: php:7-fpm
+        volumes:
+        - ./gitlab:/gitlab
+
+        
+
+volumes:
+    database:
+        driver: "local"
+    cache:
+        driver: "local"
+    

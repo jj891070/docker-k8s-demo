@@ -1,0 +1,62 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: jay-server
+  labels:
+    app: jay-server
+spec:
+  replicas: 1
+  minReadySeconds: 20
+  revisionHistoryLimit: 1
+  template:
+    metadata:
+      labels:
+        app: jay-server
+  
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: jay-server
+          image: nginx:latest
+          #imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d/
+      volumes:
+        - name: nginx-config
+          configMap: 
+            name: jay-server-nginx
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: jay-internal
+  annotations:
+    cloud.google.com/load-balancer-type: "Internal"
+spec:
+  type: LoadBalancer
+  loadBalancerIP: ""
+  clusterIP: ""
+  ports:
+    - protocol: TCP
+      name: http
+      port: 80
+  selector:
+    app: jay-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jay-external
+spec:
+  type: LoadBalancer
+  clusterIP: ""
+  ports:
+    - protocol: TCP
+      name: http
+      port: 80
+  selector:
+    app: jay-server
